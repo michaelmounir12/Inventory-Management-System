@@ -1,11 +1,16 @@
 package com.example.inventory.service;
 
+import com.example.inventory.dto.CategoryItemCountSummary;
+import com.example.inventory.dto.CategoryQuantitySummary;
 import com.example.inventory.exception.ItemNotFoundException;
 import com.example.inventory.model.Item;
 import com.example.inventory.repository.ItemRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ItemService {
@@ -68,6 +73,55 @@ public class ItemService {
      */
     public List<Item> getLowStockItems(int threshold) {
         return itemRepository.findLowStockItemsNative(threshold);
+    }
+
+    // ----- Optimized query helpers / algorithms -----
+
+    /**
+     * Get items sorted by quantity using SQL ordering.
+     */
+    public List<Item> getItemsSortedByQuantity(boolean ascending) {
+        return ascending
+                ? itemRepository.findAllByOrderByQuantityAsc()
+                : itemRepository.findAllByOrderByQuantityDesc();
+    }
+
+    /**
+     * Calculate total quantity per category using SQL GROUP BY
+     * and map results into DTOs with a HashMap for efficiency.
+     */
+    public List<CategoryQuantitySummary> getTotalQuantityPerCategory() {
+        List<Object[]> rows = itemRepository.findTotalQuantityPerCategoryNative();
+        Map<String, Long> totals = new HashMap<>();
+
+        for (Object[] row : rows) {
+            String category = (String) row[0];
+            Long totalQty = row[1] == null ? 0L : ((Number) row[1]).longValue();
+            totals.put(category, totalQty);
+        }
+
+        List<CategoryQuantitySummary> result = new ArrayList<>(totals.size());
+        for (Map.Entry<String, Long> entry : totals.entrySet()) {
+            result.add(new CategoryQuantitySummary(entry.getKey(), entry.getValue()));
+        }
+        return result;
+    }
+
+    /**
+     * Return top 5 categories with the highest number of items.
+     * Uses SQL GROUP BY / ORDER BY / LIMIT and DTO mapping.
+     */
+    public List<CategoryItemCountSummary> getTopCategoriesByItemCount() {
+        List<Object[]> rows = itemRepository.findTopCategoriesByItemCountNative();
+        List<CategoryItemCountSummary> result = new ArrayList<>(rows.size());
+
+        for (Object[] row : rows) {
+            String category = (String) row[0];
+            Long count = row[1] == null ? 0L : ((Number) row[1]).longValue();
+            result.add(new CategoryItemCountSummary(category, count));
+        }
+
+        return result;
     }
 }
 
