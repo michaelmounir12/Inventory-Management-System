@@ -48,5 +48,26 @@ public class ItemService {
         return itemRepository.findById(id)
                 .orElseThrow(() -> new ItemNotFoundException(id));
     }
+
+    /**
+     * Flag items as low stock when quantity < threshold.
+     * Returns the list of currently low-stock items.
+     */
+    public List<Item> flagLowStockItems(int threshold) {
+        List<Item> all = itemRepository.findAll();
+        for (Item item : all) {
+            boolean isLow = item.getQuantity() != null && item.getQuantity() < threshold;
+            item.setLowStock(isLow);
+        }
+        itemRepository.saveAll(all);
+        return itemRepository.findLowStockItemsNative(threshold);
+    }
+
+    /**
+     * Get low-stock items without re-flagging (uses quantity threshold).
+     */
+    public List<Item> getLowStockItems(int threshold) {
+        return itemRepository.findLowStockItemsNative(threshold);
+    }
 }
 

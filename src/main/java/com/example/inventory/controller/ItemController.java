@@ -65,5 +65,27 @@ public class ItemController {
     public ResponseEntity<Item> getItem(@PathVariable Long id) {
         return ResponseEntity.ok(itemService.getItemById(id));
     }
+
+    /**
+     * Trigger low-stock flagging (on-demand automation).
+     * POST /api/items/low-stock/refresh
+     *
+     * Flags items with quantity < 5 as low stock and returns them.
+     */
+    @PostMapping("/low-stock/refresh")
+    public ResponseEntity<List<Item>> refreshLowStockItems() {
+        List<Item> lowStock = itemService.flagLowStockItems(5);
+        return ResponseEntity.ok(lowStock);
+    }
+
+    /**
+     * Get current low-stock items (quantity < 5).
+     * GET /api/items/low-stock
+     */
+    @GetMapping("/low-stock")
+    public ResponseEntity<List<Item>> getLowStockItems() {
+        List<Item> lowStock = itemService.getLowStockItems(5);
+        return ResponseEntity.ok(lowStock);
+    }
 }
 

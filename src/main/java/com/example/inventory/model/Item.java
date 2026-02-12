@@ -22,6 +22,9 @@ public class Item {
 
     private String location;
 
+    // Flag for low stock items (quantity < 5)
+    private Boolean lowStock = false;
+
     public Item() {
     }
 
@@ -70,6 +73,14 @@ public class Item {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public Boolean getLowStock() {
+        return lowStock;
+    }
+
+    public void setLowStock(Boolean lowStock) {
+        this.lowStock = lowStock;
     }
 }
 
