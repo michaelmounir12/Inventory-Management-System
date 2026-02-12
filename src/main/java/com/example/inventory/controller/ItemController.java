@@ -1,0 +1,69 @@
+package com.example.inventory.controller;
+
+import com.example.inventory.model.Item;
+import com.example.inventory.service.ItemService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/items")
+public class ItemController {
+
+    private final ItemService itemService;
+
+    public ItemController(ItemService itemService) {
+        this.itemService = itemService;
+    }
+
+    /**
+     * Create a new item.
+     * POST /api/items
+     */
+    @PostMapping
+    public ResponseEntity<Item> createItem(@RequestBody Item item) {
+        Item created = itemService.createItem(item);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    /**
+     * Update an existing item.
+     * PUT /api/items/{id}
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<Item> updateItem(@PathVariable Long id, @RequestBody Item item) {
+        Item updated = itemService.updateItem(id, item);
+        return ResponseEntity.ok(updated);
+    }
+
+    /**
+     * Delete an item.
+     * DELETE /api/items/{id}
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteItem(@PathVariable Long id) {
+        itemService.deleteItem(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * List all items.
+     * GET /api/items
+     */
+    @GetMapping
+    public ResponseEntity<List<Item>> listItems() {
+        return ResponseEntity.ok(itemService.listAllItems());
+    }
+
+    /**
+     * Get single item by id (useful for clients).
+     * GET /api/items/{id}
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<Item> getItem(@PathVariable Long id) {
+        return ResponseEntity.ok(itemService.getItemById(id));
+    }
+}
+
